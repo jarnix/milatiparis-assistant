@@ -1,37 +1,40 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  milatiparis:
-    build: .
-    restart: always
-    environment:
-      - NODE_ENV=production
-      - NEXTAUTH_URL=https://${MILATIPARIS_DOMAIN}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - SHOPIFY_ADMIN_API_KEY=${SHOPIFY_ADMIN_API_KEY}
-      - SHOPIFY_ADMIN_API_SECRET=${SHOPIFY_ADMIN_API_SECRET}
-      - SHOPIFY_STORE_URL=${SHOPIFY_STORE_URL}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - DATABASE_URL=${DATABASE_URL}
-    networks:
-      - my_shared_network
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.milatiparis.rule=Host(`${MILATIPARIS_DOMAIN}`)
-      - traefik.http.routers.milatiparis.tls=true
-      - traefik.http.routers.milatiparis.entrypoints=web,websecure
-      - traefik.http.routers.milatiparis.tls.certresolver=mytlschallenge
-      - traefik.http.middlewares.milatiparis.headers.SSLRedirect=true
-      - traefik.http.middlewares.milatiparis.headers.STSSeconds=315360000
-      - traefik.http.middlewares.milatiparis.headers.browserXSSFilter=true
-      - traefik.http.middlewares.milatiparis.headers.contentTypeNosniff=true
-      - traefik.http.middlewares.milatiparis.headers.forceSTSHeader=true
-      - traefik.http.middlewares.milatiparis.headers.SSLHost=milatiparis.com
-      - traefik.http.middlewares.milatiparis.headers.STSIncludeSubdomains=true
-      - traefik.http.middlewares.milatiparis.headers.STSPreload=true
-      - traefik.http.routers.milatiparis.middlewares=milatiparis@docker
-      - traefik.http.services.milatiparis.loadbalancer.server.port=3000
+    milatiparis:
+        build: .
+        restart: always
+        environment:
+            - NODE_ENV=production
+            - DOTENV_PUBLIC_KEY=${DOTENV_PUBLIC_KEY}
+            - SHOPIFY_ADMIN_API_KEY=${SHOPIFY_ADMIN_API_KEY}
+            - SHOPIFY_ADMIN_API_SECRET=${SHOPIFY_ADMIN_API_SECRET}
+            - SHOPIFY_SHOP_DOMAIN=${SHOPIFY_SHOP_DOMAIN}
+            - SHOPIFY_API_URL=${SHOPIFY_API_URL}
+            - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+            - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+            - AUTHORIZED_EMAILS=${AUTHORIZED_EMAILS}
+            - OPENAI_API_KEY=${OPENAI_API_KEY}
+        networks:
+            - my_shared_network
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.milatiparis.rule=Host(`assistant.milatiparis.com`)
+            - traefik.http.routers.milatiparis.tls=true
+            - traefik.http.routers.milatiparis.entrypoints=web,websecure
+            - traefik.http.routers.milatiparis.tls.certresolver=mytlschallenge
+            - traefik.http.middlewares.milatiparis.headers.SSLRedirect=true
+            - traefik.http.middlewares.milatiparis.headers.STSSeconds=315360000
+            - traefik.http.middlewares.milatiparis.headers.browserXSSFilter=true
+            - traefik.http.middlewares.milatiparis.headers.contentTypeNosniff=true
+            - traefik.http.middlewares.milatiparis.headers.forceSTSHeader=true
+            - traefik.http.middlewares.milatiparis.headers.SSLHost=assistant.milatiparis.com
+            - traefik.http.middlewares.milatiparis.headers.STSIncludeSubdomains=true
+            - traefik.http.middlewares.milatiparis.headers.STSPreload=true
+            - traefik.http.routers.milatiparis.middlewares=milatiparis@docker
+            - traefik.http.services.milatiparis.loadbalancer.server.port=3000
 
 networks:
-  my_shared_network:
-    external: true
+    my_shared_network:
+        external: true
