@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { updateProduct, updateProductMetafield } from "@/lib/shopify";
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         // Check authentication
@@ -18,9 +18,11 @@ export async function PUT(
         }
 
         const { title, description, productId } = await request.json();
+        const resolvedParams = await params;
 
         // Use the full GID from request body, or construct it from the numeric ID in the URL
-        const fullProductId = productId || `gid://shopify/Product/${params.id}`;
+        const fullProductId =
+            productId || `gid://shopify/Product/${resolvedParams.id}`;
 
         if (!title && !description) {
             return NextResponse.json(

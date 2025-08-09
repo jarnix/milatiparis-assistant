@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
                 role: "user" as const,
                 content: [
                     {
-                        type: "text",
+                        type: "text" as const,
                         text: `Please improve this product:
                         Current Title: ${title || "No title provided"}
                         Current Description: ${
