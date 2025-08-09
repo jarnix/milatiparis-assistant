@@ -6,16 +6,7 @@ services:
         restart: always
         environment:
             - NODE_ENV=production
-            # - DOTENV_PUBLIC_KEY=${DOTENV_PUBLIC_KEY}
-            # - SHOPIFY_ADMIN_API_KEY=${SHOPIFY_ADMIN_API_KEY}
-            # - SHOPIFY_ADMIN_API_SECRET=${SHOPIFY_ADMIN_API_SECRET}
-            # - SHOPIFY_SHOP_DOMAIN=${SHOPIFY_SHOP_DOMAIN}
-            # - SHOPIFY_API_URL=${SHOPIFY_API_URL}
-            # - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-            # - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-            # - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-            # - AUTHORIZED_EMAILS=${AUTHORIZED_EMAILS}
-            # - OPENAI_API_KEY=${OPENAI_API_KEY}
+            - DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
         networks:
             - my_shared_network
         labels:

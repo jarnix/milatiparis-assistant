@@ -1,7 +1,5 @@
 FROM node:18-alpine AS base
 
-ENV DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
-
 # Install dependencies only when needed
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
@@ -11,11 +9,17 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+# Install dotenvx globally
+RUN npm install -g @dotenvx/dotenvx
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Install dotenvx in builder stage
+RUN npm install -g @dotenvx/dotenvx
 
 # Build the application
 RUN npm run build
@@ -26,8 +30,14 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install dotenvx in runner stage
+RUN npm install -g @dotenvx/dotenvx
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Copy the .env file for dotenvx
+COPY --chown=nextjs:nodejs .env ./
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
