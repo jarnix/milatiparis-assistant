@@ -55,8 +55,38 @@ export default function Home() {
         newTitle: string,
         newDescription: string
     ) => {
-        console.log("Saving product:", { productId, newTitle, newDescription });
-        // TODO: Implement save logic with API call to update database and Shopify
+        try {
+            // Extract numeric ID from Shopify GID format
+            // productId format: "gid://shopify/Product/10045716005211"
+            const numericId = productId.split("/").pop();
+
+            const response = await fetch(`/api/products/${numericId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    title: newTitle || undefined,
+                    description: newDescription || undefined,
+                    productId: productId, // Send the full GID to the API
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to update product");
+            }
+
+            const result = await response.json();
+            console.log("Product updated successfully:", result);
+
+            // Refresh the products list to show updated data
+            await fetchProducts();
+        } catch (error) {
+            console.error("Error saving product:", error);
+            throw error; // Re-throw so the modal can handle the error
+        }
     };
 
     const isOptimized = (product: ShopifyProduct) => {
