@@ -4,8 +4,8 @@
     "private": true,
     "scripts": {
         "dev": "npx dotenvx run -- next dev",
-        "build": "next build",
-        "lint": "next lint"
+        "build": "npx dotenvx run -- next build",
+        "lint": "npx dotenvx run -- next lint"
     },
     "dependencies": {
         "@dotenvx/dotenvx": "^1.48.4",

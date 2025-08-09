@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    output: 'standalone',
     env: {
         // Copy dotenvx values to process.env for middleware
         NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
