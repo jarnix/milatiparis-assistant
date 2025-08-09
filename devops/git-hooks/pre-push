@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Git pre-push hook to automatically encrypt .env files
+# This ensures .env files are never pushed in plain text
+
+set -e
+
+echo "🔐 Checking for .env files before push..."
+
+# Function to check .env file encryption status
+check_env_encryption() {
+    local env_file="$1"
+    local encrypted_file="$1.encrypted"
+    
+    if [ -f "$env_file" ]; then
+        echo "⚠️  Found $env_file - checking if it's properly encrypted..."
+        
+        if [ -f "$encrypted_file" ]; then
+            if [ "$encrypted_file" -nt "$env_file" ]; then
+                echo "✅ $encrypted_file is up to date"
+                return 0
+            else
+                echo "⚠️  $encrypted_file is older than $env_file"
+                return 1
+            fi
+        else
+            echo "❌ $encrypted_file file not found!"
+            return 1
+        fi
+    else
+        echo "✅ No $env_file file found"
+        return 0
+    fi
+}
+
+# Check all .env files
+ENV_FILES=(".env" ".env.production")
+NEEDS_ENCRYPTION=false
+
+for env_file in "${ENV_FILES[@]}"; do
+    if ! check_env_encryption "$env_file"; then
+        NEEDS_ENCRYPTION=true
+    fi
+done
+
+if [ "$NEEDS_ENCRYPTION" = true ]; then
+    echo ""
+    echo "Some .env files need to be encrypted before pushing."
+    
+    # Check if we have the password in environment
+    if [ -n "$ENV_ENCRYPTION_PASSWORD" ]; then
+        echo "🔑 Auto-encrypting .env files..."
+        npm run env:encrypt:all > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "✅ Auto-encryption completed successfully"
+            echo "📝 Adding encrypted files to git staging..."
+            git add .env.encrypted .env.production.encrypted 2>/dev/null || true
+            echo "🚀 Proceeding with push..."
+        else
+            echo "❌ Auto-encryption failed. Please encrypt manually:"
+            echo "  npm run env:encrypt:all"
+            exit 1
+        fi
+    else
+        echo "🔐 Setting up encryption password automatically..."
+        npm run env:setup-password > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "✅ Password setup completed"
+            echo "🔑 Auto-encrypting .env files..."
+            npm run env:encrypt:all > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "✅ Auto-encryption completed successfully"
+                echo "📝 Adding encrypted files to git staging..."
+                git add .env.encrypted .env.production.encrypted 2>/dev/null || true
+                echo "🚀 Proceeding with push..."
+            else
+                echo "❌ Auto-encryption failed. Please encrypt manually:"
+                echo "  npm run env:encrypt:all"
+                exit 1
+            fi
+        else
+            echo "❌ Password setup failed. Please set up manually:"
+            echo "  npm run env:setup-password"
+            echo ""
+            echo "Or encrypt manually:"
+            echo "  npm run env:encrypt:all"
+            echo ""
+            echo "Or if you want to skip this check, use:"
+            echo "  git push --no-verify"
+            echo ""
+            exit 1
+        fi
+    fi
+fi
+
+# Check if .env is in .gitignore
+if ! grep -q "^\.env\*?$" .gitignore 2>/dev/null; then
+    echo "⚠️  Warning: .env is not in .gitignore"
+    echo "Consider adding it to prevent accidental commits:"
+    echo "  echo '.env' >> .gitignore"
+    echo ""
+fi
+
+echo "🚀 Proceeding with push..." 

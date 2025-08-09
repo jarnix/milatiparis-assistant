@@ -1,0 +1,17 @@
+{
+    "name": "milatiparis-shopify",
+    "version": "1.0.0",
+    "description": "Shopify GraphQL API integration",
+    "main": "shopify-graphql.js",
+    "scripts": {
+        "start": "dotenvx run -- node shopify-graphql.js",
+        "encrypt": "dotenvx env encrypt .env .env.production",
+        "decrypt": "dotenvx env decrypt .env .env.production",
+        "postinstall": "npx dotenvx ext precommit --install"
+    },
+    "dependencies": {
+        "@dotenvx/dotenvx": "^1.48.4",
+        "dotenv": "^16.3.1"
+    },
+    "type": "module"
+}

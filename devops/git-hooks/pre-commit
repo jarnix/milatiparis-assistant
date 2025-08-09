@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Git pre-commit hook to prevent .env files from being committed
+# This ensures .env files are never accidentally committed
+
+set -e
+
+echo "🔍 Checking for .env files in commit..."
+
+# Check if any .env files are staged for commit
+ENV_FILES=$(git diff --cached --name-only | grep -E '^\.env$|^\.env\.' | grep -v '\.encrypted$' || true)
+
+if [ -n "$ENV_FILES" ]; then
+    echo "❌ .env files detected in staging area!"
+    echo ""
+    echo "The following .env files are staged for commit:"
+    echo "$ENV_FILES"
+    echo ""
+    echo "Please remove them from staging:"
+    echo "  git reset HEAD .env .env.production"
+    echo ""
+    echo "Or if you want to commit encrypted versions:"
+    echo "  npm run env:encrypt:all"
+    echo "  git add .env.encrypted .env.production.encrypted"
+    echo ""
+    echo "Remember: Only .env.encrypted files should be committed!"
+    exit 1
+else
+    echo "✅ No .env files found in staging area"
+fi
+
+echo "🚀 Proceeding with commit..." 
