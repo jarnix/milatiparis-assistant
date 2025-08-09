@@ -1,5 +1,7 @@
 FROM node:18-alpine AS base
 
+ENV DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
+
 # Install dependencies only when needed
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
@@ -14,8 +16,6 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-ENV DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
 
 # Build the application
 RUN npm run build
