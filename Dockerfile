@@ -58,4 +58,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["dotenvx", "run",  "-f .env", "--", "node", "index.js"]
+CMD ["dotenvx", "run",  "-f .env", "--", "node", "server.js"]
