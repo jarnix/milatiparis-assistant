@@ -30,6 +30,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Accept build argument for DOTENV_PRIVATE_KEY
+ARG DOTENV_PRIVATE_KEY
+ENV DOTENV_PRIVATE_KEY=$DOTENV_PRIVATE_KEY
+
 # Install dotenvx in runner stage
 RUN npm install -g @dotenvx/dotenvx
 
