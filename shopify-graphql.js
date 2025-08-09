@@ -5,7 +5,7 @@ const SHOPIFY_ADMIN_API_KEY = dotenvx.get("SHOPIFY_ADMIN_API_KEY");
 const SHOPIFY_API_URL = dotenvx.get("SHOPIFY_API_URL");
 
 async function makeGraphQLRequest(query, variables = {}) {
-    const response = await fetch(SHOPIFY_API_URL, {
+    const response = await fetch(SHOPIFY_API_URL, {w
         method: "POST",
         headers: {
             "Content-Type": "application/json",

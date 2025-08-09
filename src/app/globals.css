@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Tailwind v4 theme tokens */
+@theme {
+    --color-primary: #6366f1; /* indigo-500/600 */
+    --color-secondary: #8b5cf6; /* violet-500 */
+}

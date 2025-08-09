@@ -1,17 +1,33 @@
 {
-    "name": "milatiparis-shopify",
-    "version": "1.0.0",
-    "description": "Shopify GraphQL API integration",
-    "main": "shopify-graphql.js",
+    "name": "milatiparis-optimizer",
+    "version": "0.1.0",
+    "private": true,
     "scripts": {
-        "start": "dotenvx run -- node shopify-graphql.js",
-        "encrypt": "dotenvx env encrypt .env .env.production",
-        "decrypt": "dotenvx env decrypt .env .env.production",
-        "postinstall": "npx dotenvx ext precommit --install"
+        "dev": "npx dotenvx run -- next dev",
+        "build": "next build",
+        "lint": "next lint"
     },
     "dependencies": {
         "@dotenvx/dotenvx": "^1.48.4",
-        "dotenv": "^16.3.1"
+        "@heroicons/react": "^2.2.0",
+        "@tailwindcss/vite": "^4.0.0",
+        "autoprefixer": "^10.4.21",
+        "next": "15.4.6",
+        "next-auth": "^4.24.8",
+        "pg": "^8.11.3",
+        "react": "^18",
+        "react-dom": "^18"
     },
-    "type": "module"
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4.1.11",
+        "@types/node": "^20",
+        "@types/pg": "^8.10.9",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "eslint": "^8",
+        "eslint-config-next": "15.4.6",
+        "postcss": "^8",
+        "tailwindcss": "^4.0.0",
+        "typescript": "^5"
+    }
 }
