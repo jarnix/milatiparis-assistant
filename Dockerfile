@@ -15,6 +15,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ENV DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
+
 # Build the application
 RUN npm run build
 
