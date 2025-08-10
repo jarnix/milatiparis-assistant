@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "npx dotenvx run -- next dev",
-        "build": "npx dotenvx run -- next build",
+        "build": "npx dotenvx -f .env.production run -- next build",
         "lint": "npx dotenvx run -- next lint",
         "encrypt": "npx dotenvx encrypt -f .env && npx dotenvx encrypt -f .env.production",
         "decrypt": "npx dotenvx decrypt -f .env && npx dotenvx decrypt -f .env.production"
