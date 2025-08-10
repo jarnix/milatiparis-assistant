@@ -5,7 +5,7 @@ services:
         build:
             context: .
             args:
-                DOTENV_PRIVATE_KEY: ${DOTENV_PRIVATE_KEY}
+                - DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
         restart: always
         environment:
             - NODE_ENV=production

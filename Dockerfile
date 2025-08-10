@@ -1,55 +1,35 @@
-FROM node:18-alpine AS base
+FROM node:18-alpine
 
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+ARG DOTENV_PRIVATE_KEY
+RUN echo "Using key: $DOTENV_PRIVATE_KEY"
+
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Accept build argument for DOTENV_PRIVATE_KEY
+ENV DOTENV_PRIVATE_KEY=$DOTENV_PRIVATE_KEY
+
+# Install dependencies and dotenvx
+RUN apk add --no-cache libc6-compat && \
+    npm install -g @dotenvx/dotenvx
+
+# Copy package files
 COPY package.json package-lock.json* ./
+
+# Install dependencies
 RUN npm ci
 
-# Install dotenvx globally
-RUN npm install -g @dotenvx/dotenvx
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source code
 COPY . .
-
-# Install dotenvx in builder stage
-RUN npm install -g @dotenvx/dotenvx
 
 # Build the application
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
-WORKDIR /app
+# Create user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-ENV NODE_ENV=production
-
-# Accept build argument for DOTENV_PRIVATE_KEY
-ARG DOTENV_PRIVATE_KEY
-ENV DOTENV_PRIVATE_KEY=$DOTENV_PRIVATE_KEY
-
-# Install dotenvx in runner stage
-RUN npm install -g @dotenvx/dotenvx
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy the .env file for dotenvx
-COPY --chown=nextjs:nodejs .env.production ./.env
-
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Set permissions
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
@@ -57,5 +37,6 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production
 
-CMD ["dotenvx", "run",  "-f .env", "--", "node", "server.js"]
+CMD ["dotenvx", "run", "-f .env", "--", "node", "index.js"]
