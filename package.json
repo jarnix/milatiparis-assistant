@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "npx dotenvx run -- next dev",
         "build": "npx dotenvx -f .env.production run -- next build",
+        "start": "npx dotenvx -f .env.production run -- next start",
         "lint": "npx dotenvx run -- next lint",
         "encrypt": "npx dotenvx encrypt -f .env && npx dotenvx encrypt -f .env.production",
         "decrypt": "npx dotenvx decrypt -f .env && npx dotenvx decrypt -f .env.production"
