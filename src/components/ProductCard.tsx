@@ -17,7 +17,6 @@ export default function ProductCard({
 }: ProductCardProps) {
     const imageUrl =
         product.featuredImage?.url ||
-        product.images.edges[0]?.node.url ||
         "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjOWNhM2FmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+";
 
     return (
@@ -64,10 +63,6 @@ export default function ProductCard({
                         {new Date(product.createdAt).toLocaleDateString()}
                     </span>
                 </div>
-
-                <p className="text-gray-600 text-sm line-clamp-3">
-                    {product.description || "No description available"}
-                </p>
 
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between">

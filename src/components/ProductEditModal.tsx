@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ShopifyProduct } from "@/types/shopify";
 import { XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
@@ -22,12 +22,54 @@ export default function ProductEditModal({
     onClose,
     onSave,
 }: ProductEditModalProps) {
+    const [fullProduct, setFullProduct] = useState<ShopifyProduct | null>(null);
+    const [isLoadingProduct, setIsLoadingProduct] = useState(false);
     const [newTitle, setNewTitle] = useState("");
     const [newDescription, setNewDescription] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
 
+    // Fetch full product data when modal opens
+    useEffect(() => {
+        if (isOpen && product) {
+            const fetchFullProduct = async () => {
+                setIsLoadingProduct(true);
+                try {
+                    const productId = product.id.split("/").pop(); // Extract numeric ID from GID
+                    const response = await fetch(`/api/products/${productId}`, {
+                        credentials: "include",
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        setFullProduct(data.product);
+                        // Don't populate the new fields - let user enter new content
+                        setNewTitle("");
+                        setNewDescription("");
+                    } else {
+                        console.error("Failed to fetch product details");
+                        // Fallback to basic product data
+                        setFullProduct(product);
+                        setNewTitle("");
+                        setNewDescription("");
+                    }
+                } catch (error) {
+                    console.error("Error fetching product details:", error);
+                    // Fallback to basic product data
+                    setFullProduct(product);
+                    setNewTitle("");
+                    setNewDescription("");
+                } finally {
+                    setIsLoadingProduct(false);
+                }
+            };
+
+            fetchFullProduct();
+        }
+    }, [isOpen, product]);
+
     if (!isOpen || !product) return null;
+
+    const displayProduct = fullProduct || product;
 
     const handleSave = async () => {
         if (!newTitle.trim() && !newDescription.trim()) {
@@ -37,7 +79,11 @@ export default function ProductEditModal({
 
         setIsSaving(true);
         try {
-            await onSave(product.id, newTitle.trim(), newDescription.trim());
+            await onSave(
+                displayProduct.id,
+                newTitle.trim(),
+                newDescription.trim()
+            );
             onClose();
             setNewTitle("");
             setNewDescription("");
@@ -65,8 +111,8 @@ export default function ProductEditModal({
                 },
                 credentials: "include",
                 body: JSON.stringify({
-                    title: product.title,
-                    description: product.description,
+                    title: displayProduct.title,
+                    description: displayProduct.description,
                     imageUrl: imageUrl,
                 }),
             });
@@ -92,8 +138,8 @@ export default function ProductEditModal({
     };
 
     const imageUrl =
-        product.featuredImage?.url ||
-        product.images.edges[0]?.node.url ||
+        displayProduct.featuredImage?.url ||
+        displayProduct.images?.edges?.[0]?.node.url ||
         "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjOWNhM2FmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+";
 
     return (
@@ -128,7 +174,7 @@ export default function ProductEditModal({
                         <div className="flex-shrink-0">
                             <Image
                                 src={imageUrl}
-                                alt={product.title}
+                                alt={displayProduct.title}
                                 width={200}
                                 height={200}
                                 className="rounded-lg object-cover"
@@ -136,19 +182,21 @@ export default function ProductEditModal({
                         </div>
                         <div className="flex-1">
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                {product.title}
+                                {displayProduct.title}
                             </h3>
                             <p className="text-sm text-gray-500 mb-2">
                                 Status:{" "}
                                 <span className="capitalize">
-                                    {product.status.toLowerCase()}
+                                    {displayProduct.status?.toLowerCase()}
                                 </span>
                             </p>
                             <p className="text-sm text-gray-500">
                                 Created:{" "}
-                                {new Date(
-                                    product.createdAt
-                                ).toLocaleDateString()}
+                                {displayProduct.createdAt
+                                    ? new Date(
+                                          displayProduct.createdAt
+                                      ).toLocaleDateString()
+                                    : "N/A"}
                             </p>
                         </div>
                     </div>
@@ -161,7 +209,7 @@ export default function ProductEditModal({
                                 </label>
                                 <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                                     <p className="text-gray-900">
-                                        {product.title}
+                                        {displayProduct.title}
                                     </p>
                                 </div>
                             </div>
@@ -194,9 +242,11 @@ export default function ProductEditModal({
                                     Current Description
                                 </label>
                                 <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg h-32 overflow-y-auto">
-                                    <p className="text-gray-900 text-sm">
-                                        {product.description ||
-                                            "No description available"}
+                                    <p className="text-gray-900 text-sm whitespace-pre-line">
+                                        {isLoadingProduct
+                                            ? "Loading..."
+                                            : displayProduct.description ||
+                                              "No description available"}
                                     </p>
                                 </div>
                             </div>

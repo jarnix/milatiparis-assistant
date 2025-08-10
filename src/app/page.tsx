@@ -90,10 +90,12 @@ export default function Home() {
     };
 
     const isOptimized = (product: ShopifyProduct) => {
-        return product.metafields.edges.some(
-            (edge) =>
-                edge.node.namespace === "custom" &&
-                edge.node.key === "date_optimized"
+        return (
+            product.metafields?.edges?.some(
+                (edge) =>
+                    edge.node.namespace === "custom" &&
+                    edge.node.key === "date_optimized"
+            ) || false
         );
     };
 
@@ -170,7 +172,7 @@ export default function Home() {
                         <p className="text-gray-500">No products found.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                         {products.map((product) => (
                             <ProductCard
                                 key={product.id}

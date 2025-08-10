@@ -41,20 +41,9 @@ export async function getProducts(
             status
             createdAt
             updatedAt
-            description
-            descriptionHtml
             featuredImage {
               url
               altText
-            }
-            images(first: 5) {
-              edges {
-                node {
-                  id
-                  url
-                  altText
-                }
-              }
             }
             metafields(first: 10) {
               edges {
@@ -77,6 +66,78 @@ export async function getProducts(
         return result.data.products.edges.map((edge: any) => edge.node);
     } catch (error) {
         console.error("Error fetching products:", error);
+        throw error;
+    }
+}
+
+export async function getProduct(
+    productId: string
+): Promise<ShopifyProduct | null> {
+    const query = `
+    query getProduct($id: ID!) {
+      product(id: $id) {
+        id
+        title
+        handle
+        status
+        createdAt
+        updatedAt
+        description
+        descriptionHtml
+        featuredImage {
+          url
+          altText
+        }
+        images(first: 5) {
+          edges {
+            node {
+              id
+              url
+              altText
+            }
+          }
+        }
+        metafields(first: 10) {
+          edges {
+            node {
+              namespace
+              key
+              value
+              type
+            }
+          }
+        }
+      }
+    }
+  `;
+
+    try {
+        const result = await makeGraphQLRequest(query, { id: productId });
+
+        if (!result.data.product) {
+            return null;
+        }
+
+        const product = result.data.product;
+
+        // Convert HTML description to text with preserved line breaks
+        if (product.descriptionHtml) {
+            product.description = product.descriptionHtml
+                .replace(/<br\s*\/?>/gi, "\n") // Convert <br> to newlines
+                .replace(/<\/p>\s*<p>/gi, "\n\n") // Convert </p><p> to double newlines
+                .replace(/<p>/gi, "") // Remove opening <p> tags
+                .replace(/<\/p>/gi, "\n") // Convert closing </p> to newline
+                .replace(/<[^>]*>/g, "") // Remove any other HTML tags
+                .replace(/&nbsp;/g, " ") // Convert &nbsp; to spaces
+                .replace(/&amp;/g, "&") // Convert &amp; to &
+                .replace(/&lt;/g, "<") // Convert &lt; to <
+                .replace(/&gt;/g, ">") // Convert &gt; to >
+                .trim();
+        }
+
+        return product;
+    } catch (error) {
+        console.error("Error fetching product:", error);
         throw error;
     }
 }
@@ -112,6 +173,7 @@ export async function updateProduct(
     }
 
     if (description) {
+        // Description is already in HTML format from OpenAI
         input.descriptionHtml = description;
     }
 

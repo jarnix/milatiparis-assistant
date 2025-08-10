@@ -26,10 +26,24 @@ export async function POST(request: NextRequest) {
                 - Marketing-oriented to increase conversions
                 - Clear and compelling for customers
                 - Professional and brand-appropriate
+                - In French only
                 
                 IMPORTANT: You must respond with valid JSON only. No additional text, explanations, or markdown formatting.
                 Format: {"title": "your title here", "description": "your description here"}
-                Keep titles under 60 characters and descriptions under 160 characters for SEO.`,
+                Keep titles under 60 characters for SEO.
+                For the description, reformat properly the dimensions in a html table if the description contains them.
+                For the description, use the image url to generate a description of the product, be creative and use the image to generate a description of the product.
+                
+                CRITICAL: The description must be in HTML format (not markdown):
+                - Use <p> tags for paragraphs
+                - Use <br> tags for line breaks within paragraphs
+                - Use <strong> or <b> for bold text
+                - Use <em> or <i> for italic text
+                - Use <ul> and <li> for bullet lists
+                - Use <table>, <tr>, <td> for tabular information (sizes, dimensions)
+                - Use emojis to make the description more engaging
+                
+                Example format: {"title": "Titre Optimisé", "description": "<p>🐕 Description avec <strong>texte important</strong> et <br>retour à la ligne.</p><p>Deuxième paragraphe avec émojis.</p>"}`,
             },
             {
                 role: "user" as const,
@@ -62,7 +76,7 @@ export async function POST(request: NextRequest) {
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages,
-            max_tokens: 500,
+            max_tokens: 1500,
             temperature: 0.7,
         });
 
@@ -112,10 +126,7 @@ export async function POST(request: NextRequest) {
 
         // Trim to SEO limits
         if (result.title && result.title.length > 60) {
-            result.title = result.title.substring(0, 57) + "...";
-        }
-        if (result.description && result.description.length > 160) {
-            result.description = result.description.substring(0, 157) + "...";
+            result.title = result.title.substring(0, 60);
         }
 
         console.log("Parsed result:", result);
