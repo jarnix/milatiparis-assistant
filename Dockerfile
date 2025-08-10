@@ -29,6 +29,8 @@ RUN cp -r .next/standalone/* ./
 # The .next/static directory is already in the right place, no need to copy
 # Copy public directory if it exists
 RUN if [ -d "public" ]; then cp -r public ./public; fi
+# Ensure .env.production is in the root directory
+RUN cp .env.production ./.env.production 2>/dev/null || echo ".env.production already in place"
 
 # Create user for security
 RUN addgroup --system --gid 1001 nodejs && \
