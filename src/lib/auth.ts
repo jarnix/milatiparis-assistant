@@ -7,6 +7,8 @@ const GOOGLE_CLIENT_SECRET = dotenvx.get("GOOGLE_CLIENT_SECRET");
 const NEXTAUTH_SECRET = dotenvx.get("NEXTAUTH_SECRET");
 const AUTHORIZED_EMAILS = dotenvx.get("AUTHORIZED_EMAILS")?.split(",") || [];
 
+console.log("nextauth url", process.env.NEXTAUTH_URL);
+
 export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({

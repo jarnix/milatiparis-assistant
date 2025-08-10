@@ -5,7 +5,9 @@
     "scripts": {
         "dev": "npx dotenvx run -- next dev",
         "build": "npx dotenvx run -- next build",
-        "lint": "npx dotenvx run -- next lint"
+        "lint": "npx dotenvx run -- next lint",
+        "encrypt": "npx dotenvx encrypt -f .env && npx dotenvx encrypt -f .env.production",
+        "decrypt": "npx dotenvx decrypt -f .env && npx dotenvx decrypt -f .env.production"
     },
     "dependencies": {
         "@dotenvx/dotenvx": "^1.48.4",

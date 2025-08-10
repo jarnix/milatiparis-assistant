@@ -41,7 +41,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy the .env file for dotenvx
-COPY --chown=nextjs:nodejs .env ./
+COPY --chown=nextjs:nodejs .env.production ./.env
 
 # Set the correct permission for prerender cache
 RUN mkdir .next

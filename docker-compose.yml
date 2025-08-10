@@ -10,7 +10,7 @@ services:
         environment:
             - NODE_ENV=production
             - DOTENV_PRIVATE_KEY=${DOTENV_PRIVATE_KEY}
-            - NEXTAUTH_URL=https://assistant.milatiparis.com
+            - NEXTAUTH_URL=https://assistant2.milatiparis.com
         networks:
             - my_shared_network
         labels:
