@@ -47,4 +47,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
-CMD ["dotenvx", "run", "-f .env.production", "--", "node", "server.js"]
+CMD ["dotenvx", "run", "-f", ".env.production", "--", "node", "server.js"]
