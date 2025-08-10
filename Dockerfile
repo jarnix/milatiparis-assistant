@@ -39,4 +39,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
-CMD ["node", ".next/standalone/server.js"]
+CMD ["dotenvx", "run", "-f .env.production", "--", "node", ".next/standalone/server.js"]
