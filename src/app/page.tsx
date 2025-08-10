@@ -3,10 +3,14 @@
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { ShopifyProduct } from "@/types/shopify";
 import ProductCard from "@/components/ProductCard";
-import ProductEditModal from "@/components/ProductEditModal";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+
+const ProductEditModal = dynamic(() => import("@/components/ProductEditModal"), {
+    ssr: false,
+});
 
 export default function Home() {
     const { data: session, status } = useSession();
@@ -156,9 +160,9 @@ export default function Home() {
                                 </div>
                                 <button
                                     onClick={() => signOut()}
-                                    className="text-sm text-gray-500 hover:text-gray-700"
+                                    className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 transition-colors"
                                 >
-                                    Sign out
+                                    Sign Out
                                 </button>
                             </div>
                         </div>

@@ -5,3 +5,53 @@
     --color-primary: #6366f1; /* indigo-500/600 */
     --color-secondary: #8b5cf6; /* violet-500 */
 }
+
+/* HTML Viewer table styles to override Tailwind reset */
+.html-viewer table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1em 0 !important;
+    border: 1px solid #d1d5db !important;
+}
+
+.html-viewer th, 
+.html-viewer td {
+    border: 1px solid #d1d5db !important;
+    padding: 8px 12px !important;
+    text-align: left !important;
+    vertical-align: top !important;
+}
+
+.html-viewer th {
+    background-color: #f3f4f6 !important;
+    font-weight: 600 !important;
+}
+
+.html-viewer tbody tr:nth-child(even) {
+    background-color: #f9fafb !important;
+}
+
+.html-viewer thead th {
+    border-bottom: 2px solid #d1d5db !important;
+}
+
+/* Ensure other elements render properly too */
+.html-viewer p {
+    margin: 0.5em 0 !important;
+}
+
+.html-viewer ul, 
+.html-viewer ol {
+    margin: 0.5em 0 !important;
+    padding-left: 1.5em !important;
+}
+
+.html-viewer h1, 
+.html-viewer h2, 
+.html-viewer h3, 
+.html-viewer h4, 
+.html-viewer h5, 
+.html-viewer h6 {
+    margin: 1em 0 0.5em 0 !important;
+    font-weight: bold !important;
+}

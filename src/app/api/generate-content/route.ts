@@ -25,23 +25,27 @@ export async function POST(request: NextRequest) {
                 - SEO-friendly with relevant keywords
                 - Marketing-oriented to increase conversions
                 - Clear and compelling for customers
-                - Professional and brand-appropriate
+                - Professional and brand-appropriate (the brand is called "MilatiParis")
                 - In French only
                 
                 IMPORTANT: You must respond with valid JSON only. No additional text, explanations, or markdown formatting.
                 Format: {"title": "your title here", "description": "your description here"}
                 Keep titles under 60 characters for SEO.
-                For the description, reformat properly the dimensions in a html table if the description contains them.
+                For the title, don't use capitalized words like in English, format the title properly in French.
+                IMPORTANT: For the description, reformat properly the dimensions in a html table if the description contains sizes.
                 For the description, use the image url to generate a description of the product, be creative and use the image to generate a description of the product.
-                
+                For the description, indicate that the product is handmade/realized/made (not only designed) in Paris, France.
+
                 CRITICAL: The description must be in HTML format (not markdown):
                 - Use <p> tags for paragraphs
                 - Use <br> tags for line breaks within paragraphs
                 - Use <strong> or <b> for bold text
                 - Use <em> or <i> for italic text
                 - Use <ul> and <li> for bullet lists
-                - Use <table>, <tr>, <td> for tabular information (sizes, dimensions)
+                - When using a bullet list, don't use a <p> inside the <li>
+                - Use <table>, <th>, <tr>, <td> for tabular information (sizes, dimensions)
                 - Use emojis to make the description more engaging
+                - Put the headers in bold, put only one header per paragraph
                 
                 Example format: {"title": "Titre Optimisé", "description": "<p>🐕 Description avec <strong>texte important</strong> et <br>retour à la ligne.</p><p>Deuxième paragraphe avec émojis.</p>"}`,
             },
@@ -84,6 +88,21 @@ export async function POST(request: NextRequest) {
         if (!content) {
             throw new Error("No content generated");
         }
+
+        // Calculate cost based on gpt-4o-mini pricing (as of 2024)
+        // Input: $0.15 per 1M tokens, Output: $0.60 per 1M tokens
+        const inputTokens = completion.usage?.prompt_tokens || 0;
+        const outputTokens = completion.usage?.completion_tokens || 0;
+
+        const inputCostPerToken = 0.15 / 1000000; // $0.15 per 1M tokens
+        const outputCostPerToken = 0.6 / 1000000; // $0.60 per 1M tokens
+
+        const inputCostUSD = inputTokens * inputCostPerToken;
+        const outputCostUSD = outputTokens * outputCostPerToken;
+        const totalCostUSD = inputCostUSD + outputCostUSD;
+
+        // Convert to EUR (approximate rate: 1 USD = 0.92 EUR)
+        const totalCostEUR = totalCostUSD * 0.92;
 
         console.log("Raw OpenAI response:", content);
 
@@ -130,7 +149,20 @@ export async function POST(request: NextRequest) {
         }
 
         console.log("Parsed result:", result);
-        return NextResponse.json(result);
+
+        // Add cost information to the response
+        const responseWithCost = {
+            ...result,
+            cost: {
+                inputTokens,
+                outputTokens,
+                totalTokens: inputTokens + outputTokens,
+                costEUR: Number(totalCostEUR.toFixed(6)),
+                costUSD: Number(totalCostUSD.toFixed(6)),
+            },
+        };
+
+        return NextResponse.json(responseWithCost);
     } catch (error) {
         console.error("OpenAI API error:", error);
         return NextResponse.json(

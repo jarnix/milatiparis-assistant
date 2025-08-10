@@ -1,9 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { ShopifyProduct } from "@/types/shopify";
 import { XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
+
+// Import TipTapEditor component with dynamic import for SSR safety
+const TipTapEditor = dynamic(() => import("./TipTapEditor"), {
+    ssr: false,
+    loading: () => (
+        <div className="h-64 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center">
+            <span className="text-gray-500">Loading editor...</span>
+        </div>
+    )
+});
+import HtmlViewer from "./HtmlViewer";
 
 interface ProductEditModalProps {
     product: ShopifyProduct | null;
@@ -28,6 +40,12 @@ export default function ProductEditModal({
     const [newDescription, setNewDescription] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [lastGenerationCost, setLastGenerationCost] = useState<{
+        costEUR: number;
+        costUSD: number;
+        totalTokens: number;
+    } | null>(null);
+
 
     // Fetch full product data when modal opens
     useEffect(() => {
@@ -129,6 +147,15 @@ export default function ProductEditModal({
             if (data.description) {
                 setNewDescription(data.description);
             }
+
+            // Store cost information
+            if (data.cost) {
+                setLastGenerationCost({
+                    costEUR: data.cost.costEUR,
+                    costUSD: data.cost.costUSD,
+                    totalTokens: data.cost.totalTokens,
+                });
+            }
         } catch (error) {
             console.error("Error generating content:", error);
             alert("Failed to generate content. Please try again.");
@@ -144,65 +171,82 @@ export default function ProductEditModal({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        Edit Product
-                    </h2>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={handleGenerateContent}
-                            disabled={isGenerating}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <SparklesIcon className="h-5 w-5" />
-                            {isGenerating
-                                ? "Generating..."
-                                : "Generate with AI"}
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="p-2 hover:bg-gray-100 rounded-full"
-                        >
-                            <XMarkIcon className="h-6 w-6" />
-                        </button>
+            <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                {/* Header with product info and generate button */}
+                <div className="sticky top-0 bg-white border-b border-gray-200 p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0">
+                                <Image
+                                    src={imageUrl}
+                                    alt={displayProduct.title}
+                                    width={60}
+                                    height={60}
+                                    className="rounded-lg object-cover"
+                                />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 truncate max-w-md">
+                                    {displayProduct.title}
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    Status:{" "}
+                                    <span className="capitalize">
+                                        {displayProduct.status?.toLowerCase()}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <div className="text-center">
+                                <button
+                                    onClick={handleGenerateContent}
+                                    disabled={isGenerating}
+                                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isGenerating ? (
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                    ) : (
+                                        <SparklesIcon className="h-5 w-5" />
+                                    )}
+                                    {isGenerating
+                                        ? "Generating..."
+                                        : "Generate"}
+                                </button>
+                                {lastGenerationCost && (
+                                    <div className="text-xs text-gray-600 mt-1">
+                                        <span className="text-green-600 font-mono">
+                                            $
+                                            {lastGenerationCost.costUSD.toFixed(
+                                                4
+                                            )}
+                                        </span>
+                                        <span className="text-gray-400 ml-1">
+                                            ({lastGenerationCost.totalTokens}{" "}
+                                            tokens)
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={onClose}
+                                className="p-2 hover:bg-gray-100 rounded-full"
+                            >
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <div className="p-6 space-y-6">
-                    <div className="flex gap-6">
-                        <div className="flex-shrink-0">
-                            <Image
-                                src={imageUrl}
-                                alt={displayProduct.title}
-                                width={200}
-                                height={200}
-                                className="rounded-lg object-cover"
-                            />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                {displayProduct.title}
-                            </h3>
-                            <p className="text-sm text-gray-500 mb-2">
-                                Status:{" "}
-                                <span className="capitalize">
-                                    {displayProduct.status?.toLowerCase()}
-                                </span>
-                            </p>
-                            <p className="text-sm text-gray-500">
-                                Created:{" "}
-                                {displayProduct.createdAt
-                                    ? new Date(
-                                          displayProduct.createdAt
-                                      ).toLocaleDateString()
-                                    : "N/A"}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-4">
+                    {/* Title Card */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            Product Title
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Current Title
@@ -235,19 +279,33 @@ export default function ProductEditModal({
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        <div className="space-y-4">
+                    {/* Description Card */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            Product Description
+                        </h3>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Current Description
                                 </label>
-                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg h-32 overflow-y-auto">
-                                    <p className="text-gray-900 text-sm whitespace-pre-line">
-                                        {isLoadingProduct
-                                            ? "Loading..."
-                                            : displayProduct.description ||
-                                              "No description available"}
-                                    </p>
+                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg h-64 overflow-y-auto">
+                                    {isLoadingProduct ? (
+                                        <p className="text-gray-500">
+                                            Loading...
+                                        </p>
+                                    ) : (
+                                        <HtmlViewer
+                                            content={
+                                                displayProduct.descriptionHtml ||
+                                                ""
+                                            }
+                                            className="h-full"
+                                        />
+                                    )}
                                 </div>
                             </div>
 
@@ -261,30 +319,27 @@ export default function ProductEditModal({
                                         </span>
                                     )}
                                 </label>
-                                <textarea
+                                <TipTapEditor
                                     value={newDescription}
-                                    onChange={(e) =>
-                                        setNewDescription(e.target.value)
-                                    }
-                                    placeholder="Enter optimized description or use AI generation..."
-                                    rows={5}
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                                    onChange={setNewDescription}
+                                    className="w-full"
                                 />
                             </div>
                         </div>
                     </div>
 
+                    {/* Action Buttons */}
                     <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
                         <button
                             onClick={handleCancel}
-                            className="px-6 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                            className="px-8 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                            className="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                         >
                             {isSaving ? "Saving..." : "Save Changes"}
                         </button>
