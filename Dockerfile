@@ -24,12 +24,12 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Copy the standalone output
-RUN cp -r .next/standalone ./
-# Copy the static files
-RUN mkdir -p ./public && find . -name public -type d -not -path "./standalone/*" -exec cp -r {}/* ./public/ \; 2>/dev/null || true
-# Copy the static Next.js files
+# Copy the standalone output to app root
+RUN cp -r .next/standalone/* ./
+# Copy the static Next.js files to the correct location
 RUN cp -r .next/static ./.next/static
+# Copy public directory if it exists
+RUN if [ -d "public" ]; then cp -r public ./public; fi
 
 # Create user for security
 RUN addgroup --system --gid 1001 nodejs && \
@@ -46,4 +46,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
-CMD ["dotenvx", "run", "-f .env.production", "--", "node", ".next/standalone/server.js"]
+CMD ["dotenvx", "run", "-f .env.production", "--", "node", "server.js"]
