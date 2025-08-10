@@ -26,8 +26,7 @@ RUN npm run build
 
 # Copy the standalone output to app root
 RUN cp -r .next/standalone/* ./
-# Copy the static Next.js files to the correct location
-RUN cp -r .next/static ./.next/static
+# The .next/static directory is already in the right place, no need to copy
 # Copy public directory if it exists
 RUN if [ -d "public" ]; then cp -r public ./public; fi
 
