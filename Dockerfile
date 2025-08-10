@@ -24,6 +24,13 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Copy the standalone output
+RUN cp -r .next/standalone ./
+# Copy the static files
+RUN mkdir -p ./public && find . -name public -type d -not -path "./standalone/*" -exec cp -r {}/* ./public/ \; 2>/dev/null || true
+# Copy the static Next.js files
+RUN cp -r .next/static ./.next/static
+
 # Create user for security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
