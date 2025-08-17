@@ -1,16 +1,19 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ShopifyProduct } from "@/types/shopify";
 import ProductCard from "@/components/ProductCard";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 
-const ProductEditModal = dynamic(() => import("@/components/ProductEditModal"), {
-    ssr: false,
-});
+const ProductEditModal = dynamic(
+    () => import("@/components/ProductEditModal"),
+    {
+        ssr: false,
+    }
+);
 
 export default function Home() {
     const { data: session, status } = useSession();
@@ -20,6 +23,8 @@ export default function Home() {
     const [selectedProduct, setSelectedProduct] =
         useState<ShopifyProduct | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -32,6 +37,22 @@ export default function Home() {
             fetchProducts();
         }
     }, [session]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(event.target as Node)
+            ) {
+                setShowUserMenu(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const fetchProducts = async () => {
         try {
@@ -121,17 +142,14 @@ export default function Home() {
         <div className="min-h-screen bg-gray-50">
             <header className="bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <div>
+                    <div className="flex justify-between items-start py-4">
+                        <div className="flex flex-col">
                             <h1 className="text-3xl font-bold text-gray-900">
                                 Milati Paris
                             </h1>
-                            <p className="text-sm text-gray-500">
-                                Product Optimizer Dashboard
+                            <p className="text-lg text-gray-600 font-medium mb-2">
+                                Product Optimizer
                             </p>
-                        </div>
-
-                        <div className="flex items-center gap-6">
                             <div className="flex gap-6">
                                 <div className="text-center">
                                     <div className="text-2xl font-bold text-primary">
@@ -150,21 +168,34 @@ export default function Home() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                    <UserCircleIcon className="h-8 w-8 text-gray-400" />
-                                    <span className="text-sm text-gray-700">
-                                        {session.user?.email}
-                                    </span>
+                        <div className="relative" ref={userMenuRef}>
+                            <button
+                                onClick={() => setShowUserMenu(!showUserMenu)}
+                                className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                                <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                            </button>
+
+                            {showUserMenu && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                                    <div className="px-4 py-2 border-b border-gray-100">
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {session.user?.name || "User"}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {session.user?.email}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => signOut()}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                    >
+                                        Sign Out
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => signOut()}
-                                    className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 transition-colors"
-                                >
-                                    Sign Out
-                                </button>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
