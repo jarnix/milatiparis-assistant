@@ -56,12 +56,22 @@ export default function Home() {
 
     const fetchProducts = async () => {
         try {
-            const response = await fetch("/api/products");
+            const response = await fetch("/api/products", {
+                credentials: "include",
+            });
             if (response.ok) {
                 const data = await response.json();
                 setProducts(data.products);
             } else {
-                console.error("Failed to fetch products");
+                let details: any = null;
+                try {
+                    details = await response.json();
+                } catch {}
+                console.error(
+                    "Failed to fetch products",
+                    response.status,
+                    details || (await response.text().catch(() => ""))
+                );
             }
         } catch (error) {
             console.error("Error fetching products:", error);

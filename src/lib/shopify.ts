@@ -21,7 +21,20 @@ async function makeGraphQLRequest(
     });
 
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Read response body for better diagnostics
+        let errorBody: string | undefined;
+        try {
+            errorBody = await response.text();
+        } catch {}
+        console.error("Shopify Admin API request failed", {
+            status: response.status,
+            statusText: response.statusText,
+            url: SHOPIFY_API_URL,
+            body: errorBody,
+        });
+        throw new Error(
+            `Shopify request failed: ${response.status} ${response.statusText}`
+        );
     }
 
     return await response.json();
@@ -63,7 +76,24 @@ export async function getProducts(
 
     try {
         const result = await makeGraphQLRequest(query, { first });
-        return result.data.products.edges.map((edge: any) => edge.node);
+
+        // Handle GraphQL errors (Shopify returns 200 with errors array)
+        if (Array.isArray(result?.errors) && result.errors.length > 0) {
+            console.error("Shopify GraphQL errors (products):", result.errors);
+            // Fail softly: return empty array so the UI can render gracefully
+            return [];
+        }
+
+        const edges = result?.data?.products?.edges;
+        if (!Array.isArray(edges)) {
+            console.error(
+                "Unexpected Shopify products response shape:",
+                result
+            );
+            return [];
+        }
+
+        return edges.map((edge: any) => edge.node);
     } catch (error) {
         console.error("Error fetching products:", error);
         throw error;
@@ -113,6 +143,11 @@ export async function getProduct(
 
     try {
         const result = await makeGraphQLRequest(query, { id: productId });
+
+        if (Array.isArray(result?.errors) && result.errors.length > 0) {
+            console.error("Shopify GraphQL errors (product):", result.errors);
+            return null;
+        }
 
         if (!result.data.product) {
             return null;

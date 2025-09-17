@@ -25,6 +25,7 @@
         "@tiptap/react": "^3.1.0",
         "@tiptap/starter-kit": "^3.1.0",
         "autoprefixer": "^10.4.21",
+        "axios": "^1.12.2",
         "next": "15.4.6",
         "next-auth": "^4.24.8",
         "openai": "^5.12.2",
